@@ -5,5 +5,5 @@
 $ ./set_cmake_with_clang.sh
 $ cd build
 $ make
-$ ./build/
+$ ./terminate_process
 ```
