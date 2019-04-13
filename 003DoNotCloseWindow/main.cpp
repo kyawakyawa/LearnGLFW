@@ -10,7 +10,7 @@ int main() {
 
   GLFWwindow *const window(glfwCreateWindow(640, 480, "Test Window", NULL, NULL));
   if (window == NULL) {
-    printf("failed creating GLFW window.");
+    printf("failed creating GLFW window.\n");
     return 1;
   }
 
