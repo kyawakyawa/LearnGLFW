@@ -1,6 +1,8 @@
 # learnGLFW  
 
 ## Dependency
+* cmake 2.8 or later
+* c++17 compiler
 * glfw3
 * GLEW
 
