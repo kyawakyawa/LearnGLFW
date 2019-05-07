@@ -20,7 +20,7 @@ GLboolean PrintShaderObjectCompilerOutput(
   GLsizei buf_size;
   glGetShaderiv(shader_obj, GL_INFO_LOG_LENGTH, &buf_size);
 
-  if (buf_size > 1) {
+  if (buf_size >= 1) {
     // fetch the log
     std::unique_ptr<GLchar> info_log(new GLchar[buf_size]);
     GLsizei length;
@@ -28,7 +28,7 @@ GLboolean PrintShaderObjectCompilerOutput(
     fprintf(stderr, "%s\n", info_log.get());
   }
 
-  fprintf(stderr, "success compiling shader object\n");
+  if (status) fprintf(stderr, "success compiling shader object %s\n", shader_name);
 
   return static_cast<GLboolean>(status);
 }
@@ -39,12 +39,13 @@ GLboolean PrintProgramObjectLinkerOutput(GLuint program_object) {
   // fetch the result of link
   GLint status;
   glGetProgramiv(program_object, GL_LINK_STATUS, &status);
+  if (status == GL_FALSE) fprintf(stderr, "Link Error\n");
 
   // fetch the length of the log of program linker
   GLsizei buf_size;
   glGetProgramiv(program_object, GL_INFO_LOG_LENGTH, &buf_size);
 
-  if (buf_size > 1) {
+  if (buf_size > 0) {
     // fetch the log
     std::unique_ptr<GLchar> info_log(new GLchar[buf_size]);
     GLsizei length;
@@ -52,7 +53,7 @@ GLboolean PrintProgramObjectLinkerOutput(GLuint program_object) {
     fprintf(stderr, "%s\n", info_log.get());
   }
 
-  fprintf(stderr, "success linking program object\n");
+  if (status) fprintf(stderr, "success linking program object\n");
 
   return static_cast<GLboolean>(status);
 }
@@ -64,6 +65,8 @@ GLuint CreateProgramObject(const GLchar* vertex_shader_source,  // Str of vertex
   // create a empty program object
   const GLuint program_obj(glCreateProgram());
 
+  bool error_flag = false;
+
   if (vertex_shader_source != NULL) {
     // Create a vertex shader object
     const GLuint vertex_shader_obj(glCreateShader(GL_VERTEX_SHADER));
@@ -71,8 +74,10 @@ GLuint CreateProgramObject(const GLchar* vertex_shader_source,  // Str of vertex
     glCompileShader(vertex_shader_obj);
 
     // TODO : comment
-    if (PrintShaderObjectCompilerOutput(vertex_shader_obj, "vertex_shader")) {
+    if (PrintShaderObjectCompilerOutput(vertex_shader_obj, "vertex shader")) {
       glAttachShader(program_obj, vertex_shader_obj);
+    } else {
+      error_flag = true;
     }
     glDeleteShader(vertex_shader_obj);
   }
@@ -85,13 +90,21 @@ GLuint CreateProgramObject(const GLchar* vertex_shader_source,  // Str of vertex
     // TODO : comment
     if (PrintShaderObjectCompilerOutput(fragment_shader_obj, "fragment shader")) {
       glAttachShader(program_obj, fragment_shader_obj);
+    } else {
+      error_flag = true;
     }
     glDeleteShader(fragment_shader_obj);
   }
 
+  if (error_flag) {
+    glDeleteProgram(program_obj);
+    return 0;
+  }
+
   // link program object 
-  glBindAttribLocation(program_obj, 0, "position");
+  glBindAttribLocation  (program_obj, 0, "position");
   glBindFragDataLocation(program_obj, 0, "fragment");
+  glLinkProgram(program_obj);
 
   if (PrintProgramObjectLinkerOutput(program_obj)) {
     return program_obj;
@@ -196,6 +209,11 @@ int main() {
 
   // create program object 
   const GLuint program_obj(LoadProgram("../point.vert", "../point.frag"));
+
+  if (program_obj == 0) {
+    fprintf(stderr ,"faild load program object\n");
+    return -1;
+  }
 
   // When the window is open
   while (glfwWindowShouldClose(window) == GL_FALSE) {
