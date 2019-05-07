@@ -1,4 +1,4 @@
-# learnGLFW  
+# LearnGLFW  
 
 ## Dependency
 * cmake 2.8 or later
