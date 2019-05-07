@@ -217,6 +217,9 @@ int main() {
   // Select Background Color
   glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 
+  // Set Viewport
+  glViewport(100, 50, 300, 300);
+
   // create program object 
   const GLuint program_obj(LoadProgram("../point.vert", "../point.frag"));
 
