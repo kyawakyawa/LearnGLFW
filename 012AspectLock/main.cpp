@@ -206,6 +206,9 @@ int main() {
     return -1;
   }
 
+  // Fetch info where variable uniform  
+  const GLint aspect_lock = glGetUniformLocation(program_obj, "aspect");
+
   // Make Shape Data
   std::unique_ptr<const Shape> shape(new Shape(2, 4, rectangleVertices));
 
@@ -216,6 +219,9 @@ int main() {
 
     // start shader program
     glUseProgram(program_obj);
+
+    // Set value into variable uniform
+    glUniform1f(aspect_lock, window.GetAspect());
 
     // Draw Shape
     shape->draw();

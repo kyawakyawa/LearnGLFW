@@ -3,7 +3,7 @@
 
 #include "Window.h"
 
-static void resize(GLFWwindow *const window, int width, int height); 
+static void Resize(GLFWwindow *const window, int width, int height); 
 
 Window::Window(int width, int height, const char *title)
 : window(glfwCreateWindow(width, height, title, nullptr, nullptr)) {
@@ -27,11 +27,14 @@ Window::Window(int width, int height, const char *title)
   // Set Buffer Swap Timing
   glfwSwapInterval(1);
 
+  // register "this" pointer in this instance
+  glfwSetWindowUserPointer(window, this);
+
   // Register Callback funtion that is called when window size is changed
-  glfwSetWindowSizeCallback(window, resize);
+  glfwSetWindowSizeCallback(window, Resize);
 
   // initial setting of window
-  resize(window, width, height);
+  Resize(window, width, height);
 } 
 Window::~Window() {
   glfwDestroyWindow(window);
@@ -48,8 +51,19 @@ void Window::SwapBuffers() {
   glfwWaitEvents();
 }
 
+GLfloat Window::GetAspect() const {return aspect;}
+GLfloat& Window::GetRefAspect() {return aspect;}
+
 // this function called when window size is changed
-static void resize(GLFWwindow *const window, int width, int height) {
+static void Resize(GLFWwindow *const window, int width, int height) {
   // Set the entire window as a viewport
   glViewport(0, 0, width, height);
+
+  // Fetch "this" pointer int this instance
+  Window *const instance(static_cast<Window *>(glfwGetWindowUserPointer(window)));
+
+  if (instance != nullptr) {
+    // update aspect
+    instance->GetRefAspect() = static_cast<GLfloat>(width) / static_cast<GLfloat>(height);
+  }
 }
